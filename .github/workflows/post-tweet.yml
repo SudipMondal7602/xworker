@@ -1,0 +1,26 @@
+name: post-tweet
+
+on:
+  repository_dispatch:
+    types: [post_tweet, post_account]
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.48.0-jammy
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      RENDER_URL: ${{ secrets.RENDER_URL }}
+      WORKER_SECRET: ${{ secrets.WORKER_SECRET }}
+      POST_GAP_MIN: "12"   # প্রতি পোস্টের মাঝে সর্বনিম্ন সেকেন্ড
+      POST_GAP_MAX: "22"   # সর্বোচ্চ সেকেন্ড
+      TWEET_ID: ${{ github.event.client_payload.tweet_id }}
+      TG_ID: ${{ github.event.client_payload.tg_id }}
+      X_USERNAME: ${{ github.event.client_payload.username }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install playwright==1.48.0 requests
+      - run: python worker.py
